@@ -1,5 +1,5 @@
 [project]
-name = "hermes-whatsapp-hookmyapp"
+name = "hermes-agent-plugin-hookmyapp"
 version = "0.1.0"
 description = "HookMyApp WhatsApp platform plugin for Hermes Agent (dev/test packaging only; hermes installs via bare git clone)"
 requires-python = ">=3.11"

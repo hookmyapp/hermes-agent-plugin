@@ -3,7 +3,7 @@
 Acceptance: fresh install receives one WhatsApp text and the agent reply
 arrives (AIT-222). Run before every release tag.
 
-1. Fresh machine or clean `~/.hermes`: `hermes plugins install hookmyapp/hermes-whatsapp`
+1. Fresh machine or clean `~/.hermes`: `hermes plugins install hookmyapp/hermes-agent-plugin`
 2. `pip install aiohttp`
 3. `npm install -g @gethookmyapp/cli && hookmyapp login`
 4. `hermes hookmyapp setup` — pick the sandbox channel; confirm secret prompts are masked (values not echoed) before proceeding; confirm `~/.hermes/.env` gained the six channel vars (values NOT printed).

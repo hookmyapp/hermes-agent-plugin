@@ -7,7 +7,7 @@ This plugin listens for Meta WhatsApp Cloud API webhooks forwarded by HookMyApp,
 ## Install
 
 ```bash
-hermes plugins install hookmyapp/hermes-whatsapp
+hermes plugins install hookmyapp/hermes-agent-plugin
 pip install aiohttp
 ```
 
