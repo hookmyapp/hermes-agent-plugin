@@ -421,6 +421,7 @@ except ImportError:
         TEXT = "text"
         PHOTO = "photo"
         VOICE = "voice"
+        AUDIO = "audio"
         DOCUMENT = "document"
 
     @dataclass
@@ -481,6 +482,10 @@ class HookMyAppAdapter(BasePlatformAdapter):
     MAX_MESSAGE_LENGTH = MAX_MESSAGE_LENGTH
     MAX_BODY_BYTES = 2 * 1024 * 1024
     MEDIA_BUDGET_S = 5.0  # hard aggregate media-resolution budget per envelope
+    # send() already chunks long text (send_whatsapp_text -> split_message);
+    # tell Hermes' cron delivery router not to truncate before handing off,
+    # or long `deliver=hookmyapp` results get cut to one message + footer.
+    splits_long_messages = True
 
     def __init__(self, config):
         super().__init__(config, Platform("hookmyapp"))
@@ -664,16 +669,24 @@ class HookMyAppAdapter(BasePlatformAdapter):
                         resolved = None
             if resolved:
                 data, mime = resolved
-                ext = (mime.split("/")[-1] or "bin").split(";")[0]
+                # cache_*_from_bytes concatenate this directly as a filename
+                # suffix — a bare mime subtype ("jpeg") yields an
+                # unrecognizable "img_<id>jpeg"; it must be dotted.
+                ext = "." + (mime.split("/")[-1] or "bin").split(";")[0]
                 if mtype in ("image", "sticker"):
                     message_type = MessageType.PHOTO
                     media_urls = [cache_image_from_bytes(data, ext)]
                 elif mtype in ("audio", "voice"):
-                    message_type = MessageType.VOICE
-                    media_urls = [cache_audio_from_bytes(data, "ogg")]
+                    # WhatsApp sends type=audio for both voice notes and
+                    # plain audio attachments; only the `voice` flag on the
+                    # audio object tells them apart. Hermes auto-transcribes
+                    # VOICE as spoken input but surfaces AUDIO as a plain
+                    # attachment, so this must not default to VOICE.
+                    message_type = MessageType.VOICE if media.get("voice") else MessageType.AUDIO
+                    media_urls = [cache_audio_from_bytes(data, ".ogg")]
                 else:
                     message_type = MessageType.DOCUMENT
-                    media_urls = [cache_document_from_bytes(data, ext)]
+                    media_urls = [cache_document_from_bytes(data, f"document{ext}")]
                 media_types = [mime]
             else:
                 # resolve_media returns None silently by design (spec); the
@@ -873,7 +886,10 @@ def _pick_channel(explicit):
         print(f"  {index}. {channel.get('name', '?')} ({channel['id']})")
     choice = input("Pick a channel number: ").strip()
     try:
-        return channels[int(choice) - 1]["id"]
+        index = int(choice) - 1
+        if index < 0:
+            raise IndexError
+        return channels[index]["id"]
     except (ValueError, IndexError):
         print("Invalid choice.")
         return None

@@ -35,7 +35,7 @@ def test_setup_pulls_env_and_prints_listen_oneliner(monkeypatch, tmp_path, capsy
     env_json = json.dumps({"META_GRAPH_API_URL": "https://gw", "WHATSAPP_ACCESS_TOKEN": "hmat_secret",
                            "WHATSAPP_PHONE_NUMBER_ID": "10001", "WEBHOOK_HMAC_SECRET": "sekrit",
                            "VERIFY_TOKEN": "vt", "HOOKMYAPP_CHANNEL_ID": "ch_1"})
-    run, calls = fake_cli({
+    run, _ = fake_cli({
         ("channels", "list"): (0, json.dumps([{"id": "ch_1", "name": "Main"}])),
         ("channels", "env"): (0, env_json),
     })
@@ -89,7 +89,7 @@ def test_status_masks_secrets(monkeypatch, capsys):
 def test_setup_channels_env_failure_does_not_leak_stdout(monkeypatch, tmp_path, capsys):
     """channels env failure should not print stdout (which contains secrets)."""
     secret_stdout = json.dumps({"WEBHOOK_HMAC_SECRET": "leakedvalue"})
-    run, calls = fake_cli({
+    run, _ = fake_cli({
         ("channels", "list"): (0, json.dumps([{"id": "ch_1", "name": "Main"}])),
         ("channels", "env"): (1, secret_stdout),  # failure with secret in stdout
     })
@@ -111,3 +111,16 @@ def test_setup_channels_env_failure_does_not_leak_stdout(monkeypatch, tmp_path, 
     assert "leakedvalue" not in out
     # Manual instructions fallback should still be printed
     assert "npm install -g @gethookmyapp/cli" in out
+
+
+def test_pick_channel_rejects_zero_and_negative_choice(monkeypatch, capsys):
+    """'0' and negative input are valid Python list indices but not valid
+    1-based menu choices — must be rejected, not silently wrap to another
+    channel."""
+    channels = [{"id": "ch_1", "name": "Main"}, {"id": "ch_2", "name": "Other"}]
+    monkeypatch.setattr(adapter, "_run_hookmyapp",
+                        lambda *a: (0, json.dumps(channels), ""))
+    for choice in ("0", "-1"):
+        monkeypatch.setattr("builtins.input", lambda *_a, **_kw: choice)
+        assert adapter._pick_channel(None) is None
+        assert "Invalid choice." in capsys.readouterr().out

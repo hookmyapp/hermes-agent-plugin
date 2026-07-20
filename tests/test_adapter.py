@@ -73,6 +73,11 @@ def image_msg(wamid="wamid.img", sender="972545000000", media_id="media1"):
     return {"id": wamid, "from": sender, "type": "image", "image": {"id": media_id}}
 
 
+def audio_msg(wamid="wamid.audio", sender="972545000000", media_id="media1", voice=False):
+    return {"id": wamid, "from": sender, "type": "audio",
+            "audio": {"id": media_id, "voice": voice}}
+
+
 async def test_probe_get_echoes_verify_token(client):
     c, _ = client
     resp = await c.get("/hookmyapp/webhook", headers={"X-HookMyApp-Probe": "webhook-verification"})
@@ -289,6 +294,38 @@ async def test_allowlisted_image_message_resolves_media_and_dispatches_photo(cli
     assert event.message_type == adapter.MessageType.PHOTO
     assert event.media_urls
     assert event.media_types == ["image/jpeg"]
+    # Cache helpers expect a dotted extension (real Hermes helpers
+    # concatenate it directly as a filename suffix) — a bare mime subtype
+    # like "jpeg" would produce an unrecognizable "img_<id>jpeg" filename.
+    assert event.media_urls[0].endswith(".jpeg")
+
+
+async def test_regular_audio_message_dispatches_audio_not_voice(client):
+    """WhatsApp sends type=audio for BOTH voice notes and plain audio file
+    attachments; only the audio object's `voice` flag distinguishes them.
+    Hermes treats VOICE as auto-transcribed STT input and AUDIO as a plain
+    attachment, so a real audio file must not come through as VOICE."""
+    c, a = client
+    a._session = FakeSession([
+        FakeResponse(json_data={"url": "https://signed.example/x", "mime_type": "audio/mpeg"}),
+        FakeResponse(body=b"MP3DATA"),
+    ])
+    resp = await post_signed(c, wa_payload([audio_msg(voice=False)]))
+    assert resp.status == 200
+    event = a.received[0]
+    assert event.message_type == adapter.MessageType.AUDIO
+
+
+async def test_voice_note_message_dispatches_voice(client):
+    c, a = client
+    a._session = FakeSession([
+        FakeResponse(json_data={"url": "https://signed.example/x", "mime_type": "audio/ogg"}),
+        FakeResponse(body=b"OGGDATA"),
+    ])
+    resp = await post_signed(c, wa_payload([audio_msg(voice=True)]))
+    assert resp.status == 200
+    event = a.received[0]
+    assert event.message_type == adapter.MessageType.VOICE
 
 
 async def test_media_resolution_failure_warns_and_dispatches_text_only(client, caplog):

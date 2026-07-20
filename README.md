@@ -77,7 +77,7 @@ hermes hookmyapp setup --webhook-url https://your-host/hookmyapp/webhook
 
 Update your channel's webhook URL in HookMyApp to point to your server's public address. The adapter listens on the same local port (default `8649`) and path (default `/hookmyapp/webhook`).
 
-**Firewall:** Ensure `HOOKMYAPP_PORT` (default 8649) is accessible from the internet, or proxy through a reverse proxy (nginx, Caddy, etc.) on port 443.
+**Firewall/TLS:** Keep the adapter listener private (e.g. `HOOKMYAPP_HOST=127.0.0.1`) and expose only an HTTPS reverse proxy (nginx, Caddy, etc.) on port 443. Do not publish the raw HTTP listener directly to the internet — HMAC authenticates the payload but does not encrypt it.
 
 ## Security
 
