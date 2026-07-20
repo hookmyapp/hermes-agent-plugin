@@ -1,0 +1,41 @@
+name: hookmyapp
+label: HookMyApp WhatsApp
+kind: platform
+version: 0.1.0
+description: >
+  WhatsApp via HookMyApp — receives HookMyApp-forwarded Meta WhatsApp Cloud API
+  webhooks on a local HMAC-verified listener and replies through the HookMyApp
+  gateway. No public URL needed: `hookmyapp channels listen` tunnels webhooks
+  to this adapter.
+author: HookMyApp
+requires_env:
+  - name: META_GRAPH_API_URL
+    description: HookMyApp gateway base URL for outbound sends
+    prompt: Gateway base URL (from `hookmyapp channels env <channel>`)
+  - name: WHATSAPP_ACCESS_TOKEN
+    description: Channel access token (hmat_...)
+    prompt: Channel access token
+  - name: WHATSAPP_PHONE_NUMBER_ID
+    description: Send-from phone number id
+    prompt: Phone number id
+  - name: WEBHOOK_HMAC_SECRET
+    description: Signing secret for X-HookMyApp-Signature-256 webhook verification
+    prompt: Webhook HMAC secret
+  - name: VERIFY_TOKEN
+    description: Echoed by the GET verification probe (distinct from the HMAC secret)
+    prompt: Verify token
+optional_env:
+  - name: HOOKMYAPP_CHANNEL_ID
+    description: HookMyApp channel id (ch_...), diagnostics only
+  - name: HOOKMYAPP_HOST
+    description: Listener bind host (default 0.0.0.0)
+  - name: HOOKMYAPP_PORT
+    description: Listener port (default 8649)
+  - name: HOOKMYAPP_WEBHOOK_PATH
+    description: Webhook path (default /hookmyapp/webhook)
+  - name: HOOKMYAPP_ALLOWED_USERS
+    description: Comma-separated wa_ids allowed to talk to the agent (default-closed)
+  - name: HOOKMYAPP_ALLOW_ALL_USERS
+    description: Set to true to allow all senders (dev only)
+  - name: HOOKMYAPP_HOME_CHANNEL
+    description: Default chat id for cron/scheduled deliveries
