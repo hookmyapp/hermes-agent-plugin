@@ -35,22 +35,23 @@ Retrieve your channel credentials:
 hookmyapp channels env <channel> --write ~/.hermes/.env
 ```
 
-Then add these required environment variables to `~/.hermes/.env`:
+Then add these environment variables to `~/.hermes/.env` (the first five are
+required — the adapter refuses to start without them; the rest are optional):
 
-| Variable | Source | Default | Purpose |
+| Variable | Required | Source | Default | Purpose |
 |----------|--------|---------|---------|
-| `META_GRAPH_API_URL` | `hookmyapp channels env <channel>` | — | Gateway endpoint |
-| `WHATSAPP_ACCESS_TOKEN` | Channel settings (HookMyApp app) | — | OAuth token for Meta Graph API |
-| `WHATSAPP_PHONE_NUMBER_ID` | Channel settings | — | WhatsApp phone number ID |
-| `WEBHOOK_HMAC_SECRET` | Channel settings → Webhook config | — | HMAC-SHA256 signing key |
-| `VERIFY_TOKEN` | Channel settings → Webhook config | — | Webhook subscription handshake token |
-| `HOOKMYAPP_HOST` | — | `0.0.0.0` | Listener bind interface |
-| `HOOKMYAPP_PORT` | — | `8649` | Listener port |
-| `HOOKMYAPP_WEBHOOK_PATH` | — | `/hookmyapp/webhook` | Webhook endpoint path |
-| `HOOKMYAPP_CHANNEL_ID` | — | — | Channel id (diagnostics only) |
-| `HOOKMYAPP_ALLOWED_USERS` | — | — | Comma-separated WhatsApp IDs (wa_ids) allowed to send messages (default-closed) |
-| `HOOKMYAPP_ALLOW_ALL_USERS` | — | — | Set to `true` to allow all senders (dev/testing only) |
-| `HOOKMYAPP_HOME_CHANNEL` | — | — | Default chat id for cron and scheduled deliveries |
+| `META_GRAPH_API_URL` | Yes | `hookmyapp channels env <channel>` | — | Gateway endpoint |
+| `WHATSAPP_ACCESS_TOKEN` | Yes | Channel settings (HookMyApp app) | — | OAuth token for Meta Graph API |
+| `WHATSAPP_PHONE_NUMBER_ID` | Yes | Channel settings | — | WhatsApp phone number ID |
+| `WEBHOOK_HMAC_SECRET` | Yes | Channel settings → Webhook config | — | HMAC-SHA256 signing key |
+| `VERIFY_TOKEN` | Yes | Channel settings → Webhook config | — | Webhook subscription handshake token |
+| `HOOKMYAPP_HOST` | No | — | `0.0.0.0` | Listener bind interface |
+| `HOOKMYAPP_PORT` | No | — | `8649` | Listener port |
+| `HOOKMYAPP_WEBHOOK_PATH` | No | — | `/hookmyapp/webhook` | Webhook endpoint path |
+| `HOOKMYAPP_CHANNEL_ID` | No | — | — | Channel id (diagnostics only) |
+| `HOOKMYAPP_ALLOWED_USERS` | No | — | — | Comma-separated WhatsApp IDs (wa_ids) allowed to send messages (default-closed) |
+| `HOOKMYAPP_ALLOW_ALL_USERS` | No | — | — | Set to `true` to allow all senders (dev/testing only) |
+| `HOOKMYAPP_HOME_CHANNEL` | No | — | — | Default chat id for cron and scheduled deliveries |
 
 ## Transports (listen-first)
 
