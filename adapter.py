@@ -683,7 +683,7 @@ class HookMyAppAdapter(BasePlatformAdapter):
                     # VOICE as spoken input but surfaces AUDIO as a plain
                     # attachment, so this must not default to VOICE.
                     message_type = MessageType.VOICE if media.get("voice") else MessageType.AUDIO
-                    media_urls = [cache_audio_from_bytes(data, ".ogg")]
+                    media_urls = [cache_audio_from_bytes(data, ext)]
                 else:
                     message_type = MessageType.DOCUMENT
                     media_urls = [cache_document_from_bytes(data, f"document{ext}")]
