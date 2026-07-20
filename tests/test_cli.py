@@ -84,3 +84,30 @@ def test_status_masks_secrets(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert "supersecret" not in out
     assert "WEBHOOK_HMAC_SECRET" in out and "VERIFY_TOKEN" in out
+
+
+def test_setup_channels_env_failure_does_not_leak_stdout(monkeypatch, tmp_path, capsys):
+    """channels env failure should not print stdout (which contains secrets)."""
+    secret_stdout = json.dumps({"WEBHOOK_HMAC_SECRET": "leakedvalue"})
+    run, calls = fake_cli({
+        ("channels", "list"): (0, json.dumps([{"id": "ch_1", "name": "Main"}])),
+        ("channels", "env"): (1, secret_stdout),  # failure with secret in stdout
+    })
+
+    def fake_run_with_err(*args):
+        rc, out, err = run(*args)
+        if tuple(args[:2]) == ("channels", "env") and rc != 0:
+            return rc, out, ""  # simulate no stderr, stdout with secret
+        return rc, out, err
+
+    monkeypatch.setattr(adapter, "_run_hookmyapp", fake_run_with_err)
+    monkeypatch.setattr(adapter.shutil, "which", lambda name: "/usr/bin/hookmyapp")
+    monkeypatch.setattr(adapter, "ENV_FILE", tmp_path / ".env")
+    args = make_parser().parse_args(["setup", "--port", "9000"])
+    adapter.cmd_setup(args)
+    out = capsys.readouterr().out
+
+    # Secret from stdout should NOT appear in output
+    assert "leakedvalue" not in out
+    # Manual instructions fallback should still be printed
+    assert "npm install -g @gethookmyapp/cli" in out
