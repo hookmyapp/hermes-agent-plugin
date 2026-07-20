@@ -93,23 +93,28 @@ Every webhook includes an `X-HookMyApp-Signature-256` header containing an HMAC-
 
 **These are two distinct concepts; do not conflate them:**
 
-- **Verify Token** — A subscription-handshake value sent by Meta during webhook subscription confirmation (the GET probe). It is not a signing key.
+- **Verify Token** — A subscription-handshake value used to verify webhook ownership (echoed as the response body to HookMyApp's verification probe). It is not a signing key.
 - **HMAC Secret** — The key used to sign every delivered webhook payload (the POST body). It is only for signature verification.
 
 Both are stored in your HookMyApp channel settings. Rotation of either requires updating the env var and restarting the adapter.
 
 ### Verification probes
 
-Meta sends unsigned GET requests to your webhook endpoint during subscription verification. These requests echo the `hub.challenge` query parameter and are never dispatched to the agent — they only validate that your endpoint is alive and listening.
+HookMyApp's backend sends verification probes carrying the `X-HookMyApp-Probe: webhook-verification` header. These probes are unsigned by contract and are never dispatched to the agent:
+
+- **GET probe** — Answered with the `VERIFY_TOKEN` as the response body.
+- **POST probe** — Answered with HTTP 200.
+
+Probes only validate that your adapter is listening and properly configured. They are consumed by the verification logic and never reach the agent loop.
 
 ### Allowlist (default-closed)
 
-By default, the adapter accepts webhooks from any sender and queues them for the agent. **To restrict inbound senders:**
+By default, **no sender is answered** — the adapter drops all inbound messages unless explicitly allowed. **To permit specific senders:**
 
-Set `HOOKMYAPP_ALLOWED_USERS` to a comma-separated list of WhatsApp IDs:
+Set `HOOKMYAPP_ALLOWED_USERS` to a comma-separated list of WhatsApp IDs (numbers may include or omit the leading `+`; both match):
 
 ```bash
-HOOKMYAPP_ALLOWED_USERS=441234567890,441234567891
+HOOKMYAPP_ALLOWED_USERS=441234567890,+441234567891
 ```
 
 Or allow all senders (dev/testing only):
@@ -126,7 +131,7 @@ The adapter replies with HTTP 200 only after every event in a delivery has been:
 1. Verified with the HMAC signature.
 2. Successfully handed off to the agent loop.
 
-If verification fails or handoff fails, the adapter returns HTTP 500, and the delivery is retried by the forwarder.
+If signature verification fails, the adapter returns HTTP 401, and the delivery is retried by the forwarder. If handoff fails, the adapter returns HTTP 500.
 
 Once the adapter sends a 200 to the forwarder, the forwarder relays that acknowledgement to Meta, and **the message is not retried**.
 
@@ -177,7 +182,7 @@ WhatsApp text messages support a limited formatting subset:
 hermes hookmyapp status
 ```
 
-Prints the masked set of environment variables (set vs. missing for each required and optional var) and a liveness check.
+Prints the masked set of environment variables (set vs. missing for each required and optional var) and a configuration-completeness check (required env present, aiohttp importable).
 
 ### Health check
 

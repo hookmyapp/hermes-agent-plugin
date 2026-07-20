@@ -6,8 +6,7 @@ arrives (AIT-222). Run before every release tag.
 1. Fresh machine or clean `~/.hermes`: `hermes plugins install hookmyapp/hermes-whatsapp`
 2. `pip install aiohttp`
 3. `npm install -g @gethookmyapp/cli && hookmyapp login`
-4. `hermes hookmyapp setup` — pick the sandbox channel; confirm
-   `~/.hermes/.env` gained the six channel vars (values NOT printed).
+4. `hermes hookmyapp setup` — pick the sandbox channel; confirm secret prompts are masked (values not echoed) before proceeding; confirm `~/.hermes/.env` gained the six channel vars (values NOT printed).
 5. Add your phone's wa_id: `HOOKMYAPP_ALLOWED_USERS=<your wa_id>` in `~/.hermes/.env`.
 6. Terminal A: `hookmyapp channels listen <channel> --port 8649 --path /hookmyapp/webhook`
 7. Terminal B: `hermes gateway restart` (or start), then `hermes hookmyapp status`
