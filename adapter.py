@@ -906,7 +906,7 @@ def cmd_setup(args=None):
 
     rc, out, err = _run_hookmyapp("channels", "env", channel, "--json")
     if rc != 0:
-        print(f"channels env failed: {err or out}".strip())
+        print(f"channels env failed (exit {rc}): {err}".strip())
         _print_manual_instructions()
         return
     try:
