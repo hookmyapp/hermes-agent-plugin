@@ -37,25 +37,20 @@ hookmyapp channels env <channel> --write ~/.hermes/.env
 
 Then add these required environment variables to `~/.hermes/.env`:
 
-| Variable | Source | Example |
-|----------|--------|---------|
-| `META_GRAPH_API_URL` | `hookmyapp channels env <channel>` | `https://api.hookmyapp.io/gateway/v1` |
-| `WHATSAPP_ACCESS_TOKEN` | Channel settings (HookMyApp app) | `hmat_0000000000example` |
-| `WHATSAPP_PHONE_NUMBER_ID` | Channel settings | `1234567890123` |
-| `WEBHOOK_HMAC_SECRET` | Channel settings → Webhook config | `48f2d1e6a5c3b9f7e2k1l0m9n8o7p6q5` |
-| `VERIFY_TOKEN` | Channel settings → Webhook config | `your_verify_token_here` |
-
-Optional variables (with defaults):
-
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `HOOKMYAPP_HOST` | `0.0.0.0` | Listener bind interface |
-| `HOOKMYAPP_PORT` | `8649` | Listener port |
-| `HOOKMYAPP_WEBHOOK_PATH` | `/hookmyapp/webhook` | Webhook endpoint path |
-| `HOOKMYAPP_CHANNEL_ID` | — | Channel id (diagnostics only) |
-| `HOOKMYAPP_ALLOWED_USERS` | — | Comma-separated WhatsApp IDs (wa_ids) allowed to send messages (default-closed) |
-| `HOOKMYAPP_ALLOW_ALL_USERS` | — | Set to `true` to allow all senders (dev/testing only) |
-| `HOOKMYAPP_HOME_CHANNEL` | — | Default chat id for cron and scheduled deliveries |
+| Variable | Source | Default | Purpose |
+|----------|--------|---------|---------|
+| `META_GRAPH_API_URL` | `hookmyapp channels env <channel>` | — | Gateway endpoint |
+| `WHATSAPP_ACCESS_TOKEN` | Channel settings (HookMyApp app) | — | OAuth token for Meta Graph API |
+| `WHATSAPP_PHONE_NUMBER_ID` | Channel settings | — | WhatsApp phone number ID |
+| `WEBHOOK_HMAC_SECRET` | Channel settings → Webhook config | — | HMAC-SHA256 signing key |
+| `VERIFY_TOKEN` | Channel settings → Webhook config | — | Webhook subscription handshake token |
+| `HOOKMYAPP_HOST` | — | `0.0.0.0` | Listener bind interface |
+| `HOOKMYAPP_PORT` | — | `8649` | Listener port |
+| `HOOKMYAPP_WEBHOOK_PATH` | — | `/hookmyapp/webhook` | Webhook endpoint path |
+| `HOOKMYAPP_CHANNEL_ID` | — | — | Channel id (diagnostics only) |
+| `HOOKMYAPP_ALLOWED_USERS` | — | — | Comma-separated WhatsApp IDs (wa_ids) allowed to send messages (default-closed) |
+| `HOOKMYAPP_ALLOW_ALL_USERS` | — | — | Set to `true` to allow all senders (dev/testing only) |
+| `HOOKMYAPP_HOME_CHANNEL` | — | — | Default chat id for cron and scheduled deliveries |
 
 ## Transports (listen-first)
 
@@ -146,7 +141,7 @@ For production deployments, plan for this. Options include:
 Inbound media (images, video, audio, documents) arrives as a media ID. The adapter:
 
 1. **Resolves the media ID** via `GET {META_GRAPH_API_URL}/{media_id}` to fetch metadata and a signed download URL.
-2. **Downloads the media immediately** while the signed URL is valid (short-lived, ~15 minutes).
+2. **Downloads the media immediately** while the signed URL is valid (short-lived, a few minutes).
 3. **Caches bytes locally** for Hermes vision, STT (speech-to-text), and document tooling.
 
 **Audio/Voice notes:**
@@ -155,8 +150,8 @@ Inbound media (images, video, audio, documents) arrives as a media ID. The adapt
 - v1 does not include Meta's transcript.
 
 **Download failure:**
-- If the media cannot be downloaded, the message is forwarded to the agent **as text only** (the media ID is included in the metadata; the agent can attempt to fetch it manually if needed).
-- Transient network errors are retried up to 2 times.
+- If the media cannot be downloaded, the message is forwarded to the agent **as text only**.
+- No retries are attempted; a failed resolution or download is logged and the message continues without the media.
 
 **Supported media types:** images, video, audio, documents (PDF, DOCX, etc.), stickers.
 
@@ -181,11 +176,7 @@ WhatsApp text messages support a limited formatting subset:
 hermes hookmyapp status
 ```
 
-Displays:
-- Listener address and port
-- Webhook path
-- Active allowed senders (if restricted)
-- Hermes gateway connection status
+Prints the masked set of environment variables (set vs. missing for each required and optional var) and a liveness check.
 
 ### Health check
 
@@ -214,6 +205,6 @@ LOGLEVEL=DEBUG hermes run
 
 ## Tested Against
 
-- Hermes commit: `abc123def456` (pinned from SDD Task 1)
+- Tested against hermes-agent commit `3aeded6e32480dd4cbe002d0713aa8dc542add65` (main at time of development)
 - Python 3.11+
 - aiohttp 3.9+
