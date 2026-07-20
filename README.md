@@ -209,6 +209,14 @@ The adapter logs to stderr. Enable debug logging:
 LOGLEVEL=DEBUG hermes run
 ```
 
+## Releases
+
+`hermes plugins install hookmyapp/hermes-agent-plugin` clones this repo's
+**default branch**, which is `release` — production. `main` is staging
+(CI-gated on every push). Production releases are promoted by pushing a `v*`
+tag: CI runs the test suite, then fast-forwards `release` to the tagged
+commit and publishes a GitHub Release.
+
 ## Tested Against
 
 - Tested against hermes-agent commit `3aeded6e32480dd4cbe002d0713aa8dc542add65` (main at time of development)

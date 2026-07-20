@@ -28,3 +28,9 @@
 5. `hermes gateway restart`, then send your WhatsApp number a message.
 
 Check anytime with `hermes hookmyapp status`.
+
+## Releases
+
+You installed the `release` branch (the repo default) — that's production.
+`main` is staging. Production updates ship via `v*` tags, which promote
+tested commits from `main` into `release`.
