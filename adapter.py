@@ -86,7 +86,7 @@ def _save_env_value(key, value, path=None):
     target = Path(path) if path is not None else ENV_FILE
     target.parent.mkdir(parents=True, exist_ok=True)
     lines = target.read_text().splitlines() if target.exists() else []
-    lines = [l for l in lines if not l.startswith(f"{key}=")]
+    lines = [line for line in lines if not line.startswith(f"{key}=")]
     lines.append(f"{key}={value}")
     target.write_text("\n".join(lines) + "\n")
 
