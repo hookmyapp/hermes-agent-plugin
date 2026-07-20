@@ -39,7 +39,7 @@ Then add these environment variables to `~/.hermes/.env` (the first five are
 required — the adapter refuses to start without them; the rest are optional):
 
 | Variable | Required | Source | Default | Purpose |
-|----------|--------|---------|---------|
+|----------|----------|--------|---------|---------|
 | `META_GRAPH_API_URL` | Yes | `hookmyapp channels env <channel>` | — | Gateway endpoint |
 | `WHATSAPP_ACCESS_TOKEN` | Yes | Channel settings (HookMyApp app) | — | OAuth token for Meta Graph API |
 | `WHATSAPP_PHONE_NUMBER_ID` | Yes | Channel settings | — | WhatsApp phone number ID |
