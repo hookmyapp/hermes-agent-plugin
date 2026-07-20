@@ -1,0 +1,24 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e '.[dev]'
+      - run: python -m pytest -q
+      - name: bare import check (no aiohttp, no hermes)
+        run: |
+          python -m venv /tmp/bare && /tmp/bare/bin/python -c \
+            "import sys; sys.path.insert(0, '.'); import adapter; print('bare import ok')"
