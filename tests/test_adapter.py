@@ -314,6 +314,10 @@ async def test_regular_audio_message_dispatches_audio_not_voice(client):
     assert resp.status == 200
     event = a.received[0]
     assert event.message_type == adapter.MessageType.AUDIO
+    assert event.media_types == ["audio/mpeg"]
+    # Cached extension must reflect the real mime, not a hardcoded ".ogg" —
+    # an mp3 attachment cached as "x.ogg" would mislead downstream consumers.
+    assert event.media_urls[0].endswith(".mpeg")
 
 
 async def test_voice_note_message_dispatches_voice(client):
@@ -326,6 +330,7 @@ async def test_voice_note_message_dispatches_voice(client):
     assert resp.status == 200
     event = a.received[0]
     assert event.message_type == adapter.MessageType.VOICE
+    assert event.media_urls[0].endswith(".ogg")
 
 
 async def test_media_resolution_failure_warns_and_dispatches_text_only(client, caplog):
