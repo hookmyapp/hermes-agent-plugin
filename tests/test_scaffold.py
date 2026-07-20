@@ -1,4 +1,5 @@
 import importlib
+from pathlib import Path
 
 
 def test_module_imports_without_hermes_or_aiohttp():
@@ -7,6 +8,5 @@ def test_module_imports_without_hermes_or_aiohttp():
 
 
 def test_package_exports_register():
-    pkg_init = importlib.import_module("__init__") if False else None  # root package import checked via file read
-    text = open("__init__.py").read()
+    text = Path("__init__.py").read_text()
     assert "register" in text

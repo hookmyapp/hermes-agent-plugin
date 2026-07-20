@@ -97,3 +97,10 @@ async def test_send_5xx_after_partial_delivery_is_not_retryable():
     assert result["success"] is False
     assert result["retryable"] is False
     assert result["message_ids"] == ["wamid.out1"]
+
+
+def test_adapter_advertises_splits_long_messages():
+    """send_whatsapp_text chunks long text itself (see split_message tests
+    above) — the Hermes cron delivery router must be told, or it truncates
+    before adapter.send() ever gets a chance to chunk."""
+    assert adapter.HookMyAppAdapter.splits_long_messages is True
